@@ -1,4 +1,3 @@
-// main.go
 package main
 
 import (
@@ -22,6 +21,28 @@ type Config struct {
 	APIKey     string
 	ServerPort string
 	UploadDir  string
+}
+
+func main() {
+	// Load configuration
+	config, err := LoadConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Printf("Starting server on port %s", config.ServerPort)
+
+	// Initialize the router
+	router := gin.New()
+	router.Use(gin.Logger(), gin.Recovery())
+
+	// Set up middleware and routes
+	setupRoutes(router, config)
+
+	// Start the server
+	if err := router.Run(":" + config.ServerPort); err != nil {
+		log.Fatal("Failed to run server: ", err)
+	}
 }
 
 func LoadConfig() (*Config, error) {
@@ -51,28 +72,6 @@ func LoadConfig() (*Config, error) {
 	}
 
 	return config, nil
-}
-
-func main() {
-	// Load configuration
-	config, err := LoadConfig()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Printf("Starting server on port %s", config.ServerPort)
-
-	// Initialize the router
-	router := gin.New()
-	router.Use(gin.Logger(), gin.Recovery())
-
-	// Set up middleware and routes
-	setupRoutes(router, config)
-
-	// Start the server
-	if err := router.Run(":" + config.ServerPort); err != nil {
-		log.Fatal("Failed to run server: ", err)
-	}
 }
 
 func setupRoutes(router *gin.Engine, config *Config) {
