@@ -13,14 +13,10 @@ import (
 	"github.com/joho/godotenv"
 )
 
-const (
-	APIKeyHeader = "X-API-Key"
-)
-
 type Config struct {
 	APIKey     string
 	ServerPort string
-	UploadDir  string
+	FilesDir   string
 }
 
 func main() {
@@ -54,7 +50,7 @@ func LoadConfig() (*Config, error) {
 	config := &Config{
 		APIKey:     os.Getenv("API_KEY"),
 		ServerPort: os.Getenv("SERVER_PORT"),
-		UploadDir:  os.Getenv("UPLOAD_DIR"),
+		FilesDir:   os.Getenv("FILES_DIR"),
 	}
 
 	// Set default values if not provided
@@ -66,9 +62,9 @@ func LoadConfig() (*Config, error) {
 		config.ServerPort = "9935"
 		log.Println("Server Port set to " + config.ServerPort)
 	}
-	if config.UploadDir == "" {
-		config.UploadDir = "./uploads"
-		log.Println("Upload Directory set to " + config.UploadDir)
+	if config.FilesDir == "" {
+		config.FilesDir = "./files"
+		log.Println("Files Directory set to " + config.FilesDir)
 	}
 
 	return config, nil
@@ -78,14 +74,14 @@ func setupRoutes(router *gin.Engine, config *Config) {
 	// Configure CORS
 	configureCORS(router)
 
-	// Serve static files from the upload directory
-	router.Static("/files", config.UploadDir)
+	// Serve static files from the files directory
+	router.Static("/files", config.FilesDir)
 
 	// Apply API key middleware
 	protected := router.Group("/", APIKeyAuthMiddleware(config.APIKey))
 
 	// Protected routes
-	protected.POST("/upload", UploadFileHandler(config.UploadDir))
+	protected.POST("/upload", UploadFileHandler(config.FilesDir))
 }
 
 func configureCORS(router *gin.Engine) {
@@ -98,7 +94,7 @@ func configureCORS(router *gin.Engine) {
 	}))
 }
 
-func UploadFileHandler(uploadDir string) gin.HandlerFunc {
+func UploadFileHandler(filesDir string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Retrieve the file from form data
 		file, err := c.FormFile("file")
@@ -108,8 +104,8 @@ func UploadFileHandler(uploadDir string) gin.HandlerFunc {
 			return
 		}
 
-		// Ensure the upload directory exists
-		if err := os.MkdirAll(uploadDir, os.ModePerm); err != nil {
+		// Ensure the files directory exists
+		if err := os.MkdirAll(filesDir, os.ModePerm); err != nil {
 			log.Printf("Upload directory creation error: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create upload directory"})
 			return
@@ -117,7 +113,7 @@ func UploadFileHandler(uploadDir string) gin.HandlerFunc {
 
 		// Generate a unique filename
 		filename := generateUniqueFilename(file.Filename)
-		uploadFilePath := filepath.Join(uploadDir, filename)
+		uploadFilePath := filepath.Join(filesDir, filename)
 
 		// Save the uploaded file
 		if err := c.SaveUploadedFile(file, uploadFilePath); err != nil {
@@ -139,21 +135,4 @@ func generateUniqueFilename(originalFilename string) string {
 	ext := filepath.Ext(originalFilename)
 	name := filepath.Base(originalFilename[:len(originalFilename)-len(ext)])
 	return fmt.Sprintf("%s_%d%s", name, timestamp, ext)
-}
-
-func APIKeyAuthMiddleware(expectedAPIKey string) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		apiKey := c.GetHeader(APIKeyHeader)
-		if apiKey == "" {
-			log.Println("Missing API key")
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "API key is required"})
-			return
-		}
-		if apiKey != expectedAPIKey {
-			log.Println("Invalid API key")
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid API key"})
-			return
-		}
-		c.Next()
-	}
 }
