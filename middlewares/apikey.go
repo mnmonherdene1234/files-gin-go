@@ -2,13 +2,14 @@ package middlewares
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/mnmonherdene1234/files-gin-go/config"
 	"log"
 	"net/http"
 )
 
 func APIKeyAuthMiddleware(expectedAPIKey string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		apiKey := c.GetHeader(APIKeyHeader)
+		apiKey := c.GetHeader(config.APIKeyHeader)
 		if apiKey == "" {
 			log.Println("Missing API key")
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "API key is required"})
