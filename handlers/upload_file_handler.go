@@ -9,6 +9,18 @@ import (
 	"path/filepath"
 )
 
+// UploadFileHandler handles file uploads
+// @Summary Upload a file
+// @Description Upload a file to the server
+// @Tags files
+// @Accept  multipart/form-data
+// @Produce json
+// @Param   X-API-Key header string true "API Key"
+// @Param   file formData file true "File to upload"
+// @Success 200 {object} map[string]string "File uploaded successfully"
+// @Failure 400 {object} map[string]string "No file received"
+// @Failure 500 {object} map[string]string "Failed to create upload directory or Failed to save the file"
+// @Router /upload [post]
 func UploadFileHandler(filesDir string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Retrieve the file from form data

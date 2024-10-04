@@ -24,7 +24,7 @@ go.work
 .env
 
 # Uploaded files directory
-uploads/
+files/
 
 # IDE/editor specific files (optional)
 .idea/

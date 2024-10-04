@@ -1,0 +1,47 @@
+info:
+  contact: {}
+  description: A files server
+  title: GIN Files API
+  version: 1.0.0
+paths:
+  /upload:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload a file to the server
+      parameters:
+      - description: API Key
+        in: header
+        name: X-API-Key
+        required: true
+        type: string
+      - description: File to upload
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: File uploaded successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: No file received
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to create upload directory or Failed to save the file
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Upload a file
+      tags:
+      - files
+swagger: "2.0"
