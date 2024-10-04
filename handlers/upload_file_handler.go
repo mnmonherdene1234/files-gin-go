@@ -3,15 +3,14 @@ package handlers
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/mnmonherdene1234/files-gin-go/utils"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 )
 
-// UploadFileHandler handles file uploads
+// UploadFileHandler handles file uploads without size limitation.
 // @Summary Upload a file
-// @Description Upload a file to the server
+// @Description Upload a large file to the server
 // @Tags files
 // @Accept  multipart/form-data
 // @Produce json
@@ -23,36 +22,41 @@ import (
 // @Router /upload [post]
 func UploadFileHandler(filesDir string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Retrieve the file from form data
+		// Allow for very large files (set a very large limit)
+		c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, 1<<63-1) // No limit
+
+		// Retrieve the uploaded file from the form
 		file, err := c.FormFile("file")
 		if err != nil {
-			log.Printf("File retrieval error: %v", err)
-			c.JSON(http.StatusBadRequest, gin.H{"error": "No file received"})
+			utils.ErrorResponse(c, http.StatusBadRequest, "No file received", err)
 			return
 		}
 
-		// Ensure the files directory exists
-		if err := os.MkdirAll(filesDir, os.ModePerm); err != nil {
-			log.Printf("Upload directory creation error: %v", err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create upload directory"})
+		// Ensure the directory for saving files exists
+		if err := createUploadDir(filesDir); err != nil {
+			utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to create upload directory", err)
 			return
 		}
 
-		// Generate a unique filename
+		// Generate a unique filename to prevent conflicts
 		filename := utils.GenerateUniqueFilename(file.Filename)
 		uploadFilePath := filepath.Join(filesDir, filename)
 
 		// Save the uploaded file
 		if err := c.SaveUploadedFile(file, uploadFilePath); err != nil {
-			log.Printf("File saving error: %v", err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save the file"})
+			utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to save the file", err)
 			return
 		}
 
-		// Return success response with the file URL
+		// Respond with success and file information
 		c.JSON(http.StatusOK, gin.H{
 			"message":  "File uploaded successfully",
 			"filename": filename,
 		})
 	}
+}
+
+// createUploadDir ensures the upload directory exists, creating it if necessary.
+func createUploadDir(path string) error {
+	return os.MkdirAll(path, os.ModePerm)
 }
