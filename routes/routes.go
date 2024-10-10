@@ -8,16 +8,17 @@ import (
 	"github.com/mnmonherdene1234/files-gin-go/utils"
 )
 
-func Setup(router *gin.Engine, configModel *config.SettingsModel) {
+func Setup(router *gin.Engine) {
 	// Configure CORS
 	utils.ConfigureCORS(router)
 
 	// Serve static files from the files directory
-	router.Static("/files", configModel.FilesDir)
+	router.Static("/files", config.FilesDir)
 
 	// Apply API key middleware
-	protected := router.Group("/", middlewares.APIKeyAuthMiddleware(configModel.APIKey))
+	protected := router.Group("/", middlewares.APIKeyAuthMiddleware(config.APIKey))
 
 	// Protected routes
-	protected.POST("/upload", handlers.UploadFileHandler(configModel.FilesDir))
+	protected.POST("/upload", handlers.UploadFileHandler)
+	protected.DELETE("/delete", handlers.DeleteFileHandler)
 }

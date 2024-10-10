@@ -12,12 +12,12 @@ import (
 
 func Start() {
 	// Load configuration
-	settings, err := config.LoadConfig()
+	err := config.LoadConfig()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Printf("Starting server on port %s", settings.ServerPort)
+	log.Printf("Starting server on port %s", config.ServerPort)
 
 	// Initialize the engine
 	engine := gin.New()
@@ -25,10 +25,10 @@ func Start() {
 	engine.Use(gin.Logger(), gin.Recovery())
 
 	// Set up middleware and routes
-	routes.Setup(engine, settings)
+	routes.Setup(engine)
 
 	// Start the server
-	if err := engine.Run(":" + settings.ServerPort); err != nil {
+	if err := engine.Run(":" + config.ServerPort); err != nil {
 		log.Fatal("Failed to run server: ", err)
 	}
 }

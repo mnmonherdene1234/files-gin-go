@@ -1,14 +1,70 @@
+definitions:
+  handlers.DeleteFileRequest:
+    properties:
+      filename:
+        type: string
+    required:
+    - filename
+    type: object
 info:
   contact: {}
   description: A files server
   title: GIN Files API
   version: 1.0.0
 paths:
+  /delete:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a file from the server using the filename provided in the
+        JSON body
+      parameters:
+      - description: API Key
+        in: header
+        name: X-API-Key
+        required: true
+        type: string
+      - description: Delete file request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.DeleteFileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: File deleted successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid request body or Filename not provided
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: File not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to delete the file
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete a file by filename
+      tags:
+      - files
   /upload:
     post:
       consumes:
       - multipart/form-data
-      description: Upload a file to the server
+      description: Upload a large file to the server
       parameters:
       - description: API Key
         in: header
