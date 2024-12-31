@@ -48,4 +48,5 @@ func registerProtectedRoutes(router *gin.Engine) {
 	// Define protected endpoints for file management.
 	protected.POST("/upload", handlers.UploadFileHandler)   // Endpoint for file uploads.
 	protected.DELETE("/delete", handlers.DeleteFileHandler) // Endpoint for deleting files.
+	protected.GET("/size", handlers.SizeHandler)
 }

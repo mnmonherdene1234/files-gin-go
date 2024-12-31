@@ -60,6 +60,32 @@ paths:
       summary: Delete a file by filename
       tags:
       - files
+  /size:
+    get:
+      description: Calculates and returns the total size of the folder specified in
+        the configuration.
+      parameters:
+      - description: API Key
+        in: header
+        name: X-API-Key
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Folder size in bytes
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Error message with details
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get folder size
+      tags:
+      - Files
   /upload:
     post:
       consumes:
