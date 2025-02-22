@@ -191,6 +191,12 @@ const docTemplate = `{
                         "name": "file",
                         "in": "formData",
                         "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Use original filename",
+                        "name": "useOriginalFilename",
+                        "in": "formData"
                     }
                 ],
                 "responses": {

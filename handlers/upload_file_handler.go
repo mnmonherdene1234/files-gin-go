@@ -18,6 +18,7 @@ import (
 // @Produce json
 // @Param   X-API-Key header string true "API Key"
 // @Param   file formData file true "File to upload"
+// @Param   useOriginalFilename formData bool false "Use original filename"
 // @Success 200 {object} map[string]string "File uploaded successfully"
 // @Failure 400 {object} map[string]string "No file received"
 // @Failure 500 {object} map[string]string "Failed to create upload directory or Failed to save the file"
@@ -33,15 +34,23 @@ func UploadFileHandler(c *gin.Context) {
 		return
 	}
 
+	// Retrieve the useOriginalFilename form field
+	useOriginalFilename := c.PostForm("useOriginalFilename") == "true"
+
 	// Ensure the directory for saving files exists
 	if err := createUploadDir(config.FilesDir); err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to create upload directory", err)
 		return
 	}
 
-	// Generate a unique filename to prevent conflicts
-	uniqueFilename := utils.GenerateUniqueFilename(uploadedFile.Filename)
-	uploadFilePath := filepath.Join(config.FilesDir, uniqueFilename)
+	// Determine the filename to use
+	var filename string
+	if useOriginalFilename {
+		filename = uploadedFile.Filename
+	} else {
+		filename = utils.GenerateUniqueFilename(uploadedFile.Filename)
+	}
+	uploadFilePath := filepath.Join(config.FilesDir, filename)
 
 	// Save the uploaded file
 	if err := c.SaveUploadedFile(uploadedFile, uploadFilePath); err != nil {
@@ -52,7 +61,7 @@ func UploadFileHandler(c *gin.Context) {
 	// Respond with success and file information
 	c.JSON(http.StatusOK, gin.H{
 		"message":  "File uploaded successfully",
-		"filename": uniqueFilename,
+		"filename": filename,
 	})
 }
 

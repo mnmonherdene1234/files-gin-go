@@ -129,6 +129,10 @@ paths:
         name: file
         required: true
         type: file
+      - description: Use original filename
+        in: formData
+        name: useOriginalFilename
+        type: boolean
       produces:
       - application/json
       responses:
