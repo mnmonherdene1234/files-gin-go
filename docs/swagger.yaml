@@ -60,6 +60,33 @@ paths:
       summary: Delete a file by filename
       tags:
       - files
+  /list-files:
+    get:
+      description: Retrieves a list of all files in the configured directory.
+      parameters:
+      - description: API Key
+        in: header
+        name: X-API-Key
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of files
+          schema:
+            items:
+              type: string
+            type: array
+        "500":
+          description: Failed to list files
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List files
+      tags:
+      - files
   /size:
     get:
       description: Calculates and returns the total size of the folder specified in

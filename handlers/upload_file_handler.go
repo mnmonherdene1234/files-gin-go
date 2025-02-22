@@ -1,12 +1,13 @@
 package handlers
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/mnmonherdene1234/files-gin-go/config"
-	"github.com/mnmonherdene1234/files-gin-go/utils"
 	"net/http"
 	"os"
 	"path/filepath"
+
+	"github.com/gin-gonic/gin"
+	"github.com/mnmonherdene1234/files-gin-go/config"
+	"github.com/mnmonherdene1234/files-gin-go/utils"
 )
 
 // UploadFileHandler handles file uploads without size limitation.
@@ -26,7 +27,7 @@ func UploadFileHandler(c *gin.Context) {
 	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, 1<<63-1) // No limit
 
 	// Retrieve the uploaded file from the form
-	file, err := c.FormFile("file")
+	uploadedFile, err := c.FormFile("file")
 	if err != nil {
 		utils.ErrorResponse(c, http.StatusBadRequest, "No file received", err)
 		return
@@ -39,11 +40,11 @@ func UploadFileHandler(c *gin.Context) {
 	}
 
 	// Generate a unique filename to prevent conflicts
-	filename := utils.GenerateUniqueFilename(file.Filename)
-	uploadFilePath := filepath.Join(config.FilesDir, filename)
+	uniqueFilename := utils.GenerateUniqueFilename(uploadedFile.Filename)
+	uploadFilePath := filepath.Join(config.FilesDir, uniqueFilename)
 
 	// Save the uploaded file
-	if err := c.SaveUploadedFile(file, uploadFilePath); err != nil {
+	if err := c.SaveUploadedFile(uploadedFile, uploadFilePath); err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to save the file", err)
 		return
 	}
@@ -51,11 +52,11 @@ func UploadFileHandler(c *gin.Context) {
 	// Respond with success and file information
 	c.JSON(http.StatusOK, gin.H{
 		"message":  "File uploaded successfully",
-		"filename": filename,
+		"filename": uniqueFilename,
 	})
 }
 
 // createUploadDir ensures the upload directory exists, creating it if necessary.
-func createUploadDir(path string) error {
-	return os.MkdirAll(path, os.ModePerm)
+func createUploadDir(directoryPath string) error {
+	return os.MkdirAll(directoryPath, os.ModePerm)
 }

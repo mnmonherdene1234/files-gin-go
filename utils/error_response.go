@@ -1,8 +1,9 @@
 package utils
 
 import (
-	"github.com/gin-gonic/gin"
 	"log"
+
+	"github.com/gin-gonic/gin"
 )
 
 // ErrorResponse is a helper function for handling errors in a consistent way.

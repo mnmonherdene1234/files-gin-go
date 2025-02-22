@@ -16,15 +16,15 @@ func Setup(router *gin.Engine) {
 	utils.ConfigureCORS(router)
 
 	// Serve static files if enabled in the configuration.
-	serveStaticFiles(router)
+	configureStaticFileServing(router)
 
 	// Define protected routes with API key authentication middleware.
-	registerProtectedRoutes(router)
+	defineProtectedRoutes(router)
 }
 
-// serveStaticFiles configures the router to serve static files
+// configureStaticFileServing configures the router to serve static files
 // from the specified directory if the feature is enabled.
-func serveStaticFiles(router *gin.Engine) {
+func configureStaticFileServing(router *gin.Engine) {
 	if config.IsServeStaticFiles {
 		router.Static(config.StaticFilesServePath, config.FilesDir)
 		log.Printf("✅ Static file serving enabled: Path = '%s', Directory = '%s'",
@@ -34,19 +34,20 @@ func serveStaticFiles(router *gin.Engine) {
 	}
 }
 
-// registerProtectedRoutes creates a group of routes protected by API key authentication.
-func registerProtectedRoutes(router *gin.Engine) {
+// defineProtectedRoutes creates a group of routes protected by API key authentication.
+func defineProtectedRoutes(router *gin.Engine) {
 	// Apply API key authentication middleware to the route group.
-	var protected *gin.RouterGroup
+	var protectedRoutes *gin.RouterGroup
 
 	if config.APIKeyEnabled {
-		protected = router.Group("/", middlewares.APIKeyAuthMiddleware(config.APIKey))
+		protectedRoutes = router.Group("/", middlewares.APIKeyAuthMiddleware(config.APIKey))
 	} else {
-		protected = router.Group("/")
+		protectedRoutes = router.Group("/")
 	}
 
 	// Define protected endpoints for file management.
-	protected.POST("/upload", handlers.UploadFileHandler)   // Endpoint for file uploads.
-	protected.DELETE("/delete", handlers.DeleteFileHandler) // Endpoint for deleting files.
-	protected.GET("/size", handlers.SizeHandler)
+	protectedRoutes.POST("/upload", handlers.UploadFileHandler)   // Endpoint for file uploads.
+	protectedRoutes.DELETE("/delete", handlers.DeleteFileHandler) // Endpoint for deleting files.
+	protectedRoutes.GET("/size", handlers.SizeHandler)            // Endpoint for getting file size.
+	protectedRoutes.GET("/list-files", handlers.FilesListHandler) // Endpoint for listing files.
 }
