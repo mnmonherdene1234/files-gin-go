@@ -8,8 +8,8 @@ definitions:
     type: object
 info:
   contact: {}
-  description: A files server
-  title: GIN Files API
+  description: A simple file management API using Gin
+  title: files-gin-go
   version: 1.0.0
 paths:
   /delete:
@@ -59,8 +59,8 @@ paths:
             type: object
       summary: Delete a file by filename
       tags:
-      - files
-  /list-files:
+      - Files
+  /list:
     get:
       description: Retrieves a list of all files in the configured directory.
       parameters:
@@ -86,7 +86,7 @@ paths:
             type: object
       summary: List files
       tags:
-      - files
+      - Files
   /size:
     get:
       description: Calculates and returns the total size of the folder specified in
@@ -156,5 +156,5 @@ paths:
             type: object
       summary: Upload a file
       tags:
-      - files
+      - Files
 swagger: "2.0"

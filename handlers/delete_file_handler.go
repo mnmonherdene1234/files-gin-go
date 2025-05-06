@@ -1,12 +1,13 @@
 package handlers
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/mnmonherdene1234/files-gin-go/config"
-	"github.com/mnmonherdene1234/files-gin-go/utils"
 	"net/http"
 	"os"
 	"path/filepath"
+
+	"github.com/gin-gonic/gin"
+	"github.com/mnmonherdene1234/files-gin-go/config"
+	"github.com/mnmonherdene1234/files-gin-go/utils"
 )
 
 // DeleteFileRequest represents the expected JSON structure for the delete file request.
@@ -17,7 +18,7 @@ type DeleteFileRequest struct {
 // DeleteFileHandler handles file deletions by filename from JSON request body.
 // @Summary Delete a file by filename
 // @Description Delete a file from the server using the filename provided in the JSON body
-// @Tags files
+// @Tags Files
 // @Accept json
 // @Produce json
 // @Param   X-API-Key header string true "API Key"

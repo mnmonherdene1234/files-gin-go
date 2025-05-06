@@ -25,7 +25,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "files"
+                    "Files"
                 ],
                 "summary": "Delete a file by filename",
                 "parameters": [
@@ -86,14 +86,14 @@ const docTemplate = `{
                 }
             }
         },
-        "/list-files": {
+        "/list": {
             "get": {
                 "description": "Retrieves a list of all files in the configured directory.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "files"
+                    "Files"
                 ],
                 "summary": "List files",
                 "parameters": [
@@ -174,7 +174,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "files"
+                    "Files"
                 ],
                 "summary": "Upload a file",
                 "parameters": [
@@ -252,8 +252,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "",
 	BasePath:         "",
 	Schemes:          []string{},
-	Title:            "GIN Files API",
-	Description:      "A files server",
+	Title:            "files-gin-go",
+	Description:      "A simple file management API using Gin",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

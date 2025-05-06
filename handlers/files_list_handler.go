@@ -12,12 +12,12 @@ import (
 // FilesListHandler handles the request to list all files in a specified directory.
 // @Summary List files
 // @Description Retrieves a list of all files in the configured directory.
-// @Tags files
+// @Tags Files
 // @Produce json
 // @Param   	 X-API-Key header string true "API Key"
 // @Success 200 {array} string "List of files"
 // @Failure 500 {object} map[string]string "Failed to list files"
-// @Router /list-files [get]
+// @Router /list [get]
 func FilesListHandler(c *gin.Context) {
 	// Retrieve the directory path from the configuration
 	directoryPath := config.FilesDir

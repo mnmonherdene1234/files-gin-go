@@ -13,7 +13,7 @@ import (
 // UploadFileHandler handles file uploads without size limitation.
 // @Summary Upload a file
 // @Description Upload a large file to the server
-// @Tags files
+// @Tags Files
 // @Accept  multipart/form-data
 // @Produce json
 // @Param   X-API-Key header string true "API Key"

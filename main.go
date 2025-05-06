@@ -5,9 +5,9 @@ import (
 	"github.com/mnmonherdene1234/files-gin-go/server"
 )
 
-// @title GIN Files API
+// @title files-gin-go
 // @version 1.0.0
-// @description A files server
+// @description A simple file management API using Gin
 func main() {
 	server.Start()
 }

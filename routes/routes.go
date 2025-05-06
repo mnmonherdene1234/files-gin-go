@@ -49,5 +49,5 @@ func defineProtectedRoutes(router *gin.Engine) {
 	protectedRoutes.POST("/upload", handlers.UploadFileHandler)   // Endpoint for file uploads.
 	protectedRoutes.DELETE("/delete", handlers.DeleteFileHandler) // Endpoint for deleting files.
 	protectedRoutes.GET("/size", handlers.SizeHandler)            // Endpoint for getting file size.
-	protectedRoutes.GET("/list-files", handlers.FilesListHandler) // Endpoint for listing files.
+	protectedRoutes.GET("/list", handlers.FilesListHandler)       // Endpoint for listing files.
 }
