@@ -1,3 +1,6 @@
+# Build folder (contains binary artifacts)
+build/
+
 # Binaries for programs and plugins
 *.exe
 *.exe~
