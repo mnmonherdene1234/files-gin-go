@@ -1,38 +1,7 @@
-# Build folder (contains binary artifacts)
-build/
-
-# Binaries for programs and plugins
-*.exe
-*.exe~
-*.dll
-*.so
-*.dylib
-
-# Test binary, built with `go test -c`
-*.test
-
-# Output of the `go coverage` tool
-*.out
-
-# Edit backups
-*~
-
-# Dependency directories (for projects not using Go modules)
-vendor/
-
-# Go Workspaces
-go.work
-
-# Environment variable files
 .env
-
-# Uploaded files directory
 files/
-
-# IDE/editor specific files (optional)
-.idea/
-.vscode/
-*.iml
-
-# Executable
-main
+build/
+files-gin-go
+files-gin-go.exe
+*.test
+*.out
