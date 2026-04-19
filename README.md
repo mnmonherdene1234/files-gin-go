@@ -1,53 +1,41 @@
-# Files GIN Go
+# files-gin-go
 
-## Overview
+Simple file management API written with Go standard library only.
 
-This project is a file management API built using the GIN framework in Go. It provides endpoints for uploading, listing, deleting files, and calculating folder sizes.
+## File Structure
 
-## Getting Started
+```text
+.
+├── app.go
+├── config.go
+├── main.go
+├── store.go
+├── store_test.go
+├── .env.example
+├── go.mod
+├── run.sh
+└── build-all.sh
+```
 
-### Setup
+## Endpoints
 
-1. Copy the `.env.example` file to `.env`:
-   ```bash
-   cp .env.example .env
-   ```
-2. Update the `.env` file with your own configuration as needed.
+- `POST /upload`
+- `DELETE /delete`
+- `GET /list`
+- `GET /size`
+- `GET /files/...` when `IS_SERVE_STATIC_FILES=true`
 
-### Running the Application
+If `API_KEY_ENABLED=true`, upload, delete, list, size, and static file access require the header defined by `API_KEY_HEADER`.
 
-To start the application, use the provided `run.sh` script to build and run the source code:
+## Run
 
 ```bash
-./run.sh
+cp .env.example .env
+go run .
 ```
 
-Alternatively, you can use the pre-built release binary if available.
+## Notes
 
-## Swagger (Development Only)
-
-Swagger is a tool that helps you document and test your APIs. This section is intended for development purposes only.
-
-### Swagger UI Endpoint
-
-You can access the Swagger UI at the following endpoint:
-
-```
-/swagger/index.html
-```
-
-### Installation
-
-To install the Swagger CLI tool, run the following command:
-
-```
-go install github.com/swaggo/swag/cmd/swag@latest
-```
-
-### Initialize Swagger
-
-To generate the Swagger documentation for your project, run:
-
-```
-swag init
-```
+- No external runtime dependency is used.
+- `.env` loading is implemented with standard library code.
+- CORS is handled manually.

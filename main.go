@@ -1,13 +1,20 @@
 package main
 
 import (
-	_ "github.com/mnmonherdene1234/files-gin-go/docs"
-	"github.com/mnmonherdene1234/files-gin-go/server"
+	"log"
+	"net/http"
 )
 
-// @title files-gin-go
-// @version 1.0.0
-// @description A simple file management API using Gin
 func main() {
-	server.Start()
+	cfg, err := LoadConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	app := NewApp(cfg)
+
+	log.Printf("Listening on :%s", cfg.ServerPort)
+	if err := http.ListenAndServe(":"+cfg.ServerPort, app.Handler()); err != nil {
+		log.Fatal(err)
+	}
 }
