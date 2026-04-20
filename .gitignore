@@ -5,3 +5,4 @@ files-gin-go
 files-gin-go.exe
 *.test
 *.out
+.gocache

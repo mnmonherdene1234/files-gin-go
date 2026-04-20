@@ -12,8 +12,9 @@ import (
 )
 
 var (
-	ErrInvalidFilename = errors.New("invalid filename")
-	ErrFileNotFound    = errors.New("file not found")
+	ErrInvalidFilename  = errors.New("invalid filename")
+	ErrFileNotFound     = errors.New("file not found")
+	ErrFileAlreadyExists = errors.New("file already exists")
 )
 
 type FileMeta struct {
@@ -54,8 +55,11 @@ func (s *FileStore) Save(reader io.Reader, name string) error {
 		return err
 	}
 
-	file, err := os.Create(filePath)
+	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0o644)
 	if err != nil {
+		if errors.Is(err, os.ErrExist) {
+			return ErrFileAlreadyExists
+		}
 		return err
 	}
 	defer file.Close()
@@ -78,6 +82,21 @@ func (s *FileStore) Delete(name string) error {
 	}
 
 	return nil
+}
+
+func (s *FileStore) Exists(name string) (bool, error) {
+	filePath, err := s.resolveFilePath(name)
+	if err != nil {
+		return false, err
+	}
+	_, err = os.Stat(filePath)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
 }
 
 func (s *FileStore) List() ([]FileMeta, error) {

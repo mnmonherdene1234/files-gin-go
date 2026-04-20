@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -45,5 +46,63 @@ func TestListAndFolderSize(t *testing.T) {
 	}
 	if size != int64(len(content)) {
 		t.Fatalf("unexpected folder size: %d", size)
+	}
+}
+
+func TestExists(t *testing.T) {
+	dir := t.TempDir()
+	store := NewFileStore(dir)
+
+	exists, err := store.Exists("nonexistent.txt")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if exists {
+		t.Fatal("expected nonexistent file to not exist")
+	}
+
+	if err := os.WriteFile(filepath.Join(dir, "test.txt"), []byte("hello"), 0o644); err != nil {
+		t.Fatalf("write file: %v", err)
+	}
+
+	exists, err = store.Exists("test.txt")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !exists {
+		t.Fatal("expected file to exist")
+	}
+}
+
+func TestExistsRejectsPathTraversal(t *testing.T) {
+	store := NewFileStore(t.TempDir())
+
+	_, err := store.Exists("../outside.txt")
+	if !errors.Is(err, ErrInvalidFilename) {
+		t.Fatalf("expected ErrInvalidFilename, got %v", err)
+	}
+}
+
+func TestSaveAtomicDuplicate(t *testing.T) {
+	dir := t.TempDir()
+	store := NewFileStore(dir)
+
+	err := store.Save(strings.NewReader("hello"), "duplicate.txt")
+	if err != nil {
+		t.Fatalf("first save failed: %v", err)
+	}
+
+	err = store.Save(strings.NewReader("hello"), "duplicate.txt")
+	if !errors.Is(err, ErrFileAlreadyExists) {
+		t.Fatalf("expected ErrFileAlreadyExists, got %v", err)
+	}
+}
+
+func TestSaveAtomicDuplicateRejectsPathTraversal(t *testing.T) {
+	store := NewFileStore(t.TempDir())
+
+	err := store.Save(strings.NewReader("test"), "../evil.txt")
+	if !errors.Is(err, ErrInvalidFilename) {
+		t.Fatalf("expected ErrInvalidFilename, got %v", err)
 	}
 }

@@ -19,6 +19,7 @@ type Config struct {
 	StaticFilesPath   string
 	ServeStaticFiles  bool
 	MaxUploadMemoryMB int64
+	MaxUploadSizeMB   int64
 }
 
 func LoadConfig() (Config, error) {
@@ -27,14 +28,19 @@ func LoadConfig() (Config, error) {
 	}
 
 	cfg := Config{
-		APIKeyEnabled:     parseBool(getEnv("API_KEY_ENABLED", "true")),
+		APIKeyEnabled:     parseBool(getEnv("API_KEY_ENABLED", "false")),
 		APIKeyHeader:      getEnv("API_KEY_HEADER", "X-API-Key"),
-		APIKey:            getEnv("API_KEY", "123456890"),
+		APIKey:            getEnv("API_KEY", ""),
 		ServerPort:        getEnv("SERVER_PORT", "9935"),
 		FilesDir:          getEnv("FILES_DIR", "./files"),
 		StaticFilesPath:   normalizeURLPath(getEnv("STATIC_FILES_SERVE_PATH", "/files")),
 		ServeStaticFiles:  parseBool(getEnv("IS_SERVE_STATIC_FILES", "true")),
 		MaxUploadMemoryMB: parseInt64(getEnv("MAX_UPLOAD_MEMORY_MB", "32"), 32),
+		MaxUploadSizeMB:   parseInt64(getEnv("MAX_UPLOAD_SIZE_MB", "100"), 100),
+	}
+
+	if cfg.APIKeyEnabled && cfg.APIKey == "" {
+		return Config{}, errors.New("API_KEY must be set when API_KEY_ENABLED is true")
 	}
 
 	logConfig(cfg)
@@ -143,6 +149,7 @@ func logConfig(cfg Config) {
 	log.Println("Static files path:", cfg.StaticFilesPath)
 	log.Println("Serve static files:", cfg.ServeStaticFiles)
 	log.Println("Max upload memory MB:", cfg.MaxUploadMemoryMB)
+	log.Println("Max upload size MB:", cfg.MaxUploadSizeMB)
 }
 
 func maskSecret(value string) string {

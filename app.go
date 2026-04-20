@@ -20,8 +20,9 @@ type DeleteFileRequest struct {
 }
 
 type UploadResponse struct {
-	Message  string `json:"message"`
-	Filename string `json:"filename"`
+	Message      string `json:"message"`
+	Filename     string `json:"filename"`
+	DownloadURL  string `json:"downloadUrl,omitempty"`
 }
 
 type DeleteResponse struct {
@@ -52,6 +53,7 @@ func (a *App) Handler() http.Handler {
 	mux := http.NewServeMux()
 
 	mux.Handle("GET /{$}", a.public(http.HandlerFunc(a.handleIndex)))
+	mux.Handle("GET /health", a.public(http.HandlerFunc(a.handleHealth)))
 	mux.Handle("POST /upload", a.protected(http.HandlerFunc(a.handleUpload)))
 	mux.Handle("DELETE /delete", a.protected(http.HandlerFunc(a.handleDelete)))
 	mux.Handle("GET /list", a.protected(http.HandlerFunc(a.handleList)))
@@ -71,6 +73,7 @@ func (a *App) handleIndex(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{
 		"name": "files-gin-go",
 		"endpoints": []string{
+			"GET /health",
 			"POST /upload",
 			"DELETE /delete",
 			"GET /list",
@@ -80,10 +83,27 @@ func (a *App) handleIndex(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func (a *App) handleHealth(w http.ResponseWriter, r *http.Request) {
+	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+}
+
 func (a *App) handleUpload(w http.ResponseWriter, r *http.Request) {
+	maxSize := a.config.MaxUploadSizeMB << 20
+	r.Body = http.MaxBytesReader(w, r.Body, maxSize)
 	if err := r.ParseMultipartForm(a.config.MaxUploadMemoryMB << 20); err != nil {
+		if r.MultipartForm != nil {
+			r.MultipartForm.RemoveAll()
+		}
+		var maxBytesError *http.MaxBytesError
+		if errors.As(err, &maxBytesError) {
+			writeError(w, http.StatusRequestEntityTooLarge, "Upload size exceeds limit", err)
+			return
+		}
 		writeError(w, http.StatusBadRequest, "Invalid multipart form", err)
 		return
+	}
+	if r.MultipartForm != nil {
+		defer r.MultipartForm.RemoveAll()
 	}
 
 	file, header, err := r.FormFile("file")
@@ -103,9 +123,15 @@ func (a *App) handleUpload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var downloadURL string
+	if a.config.ServeStaticFiles {
+		downloadURL = a.config.StaticFilesPath + "/" + filename
+	}
+
 	writeJSON(w, http.StatusOK, UploadResponse{
-		Message:  "File uploaded successfully",
-		Filename: filename,
+		Message:     "File uploaded successfully",
+		Filename:    filename,
+		DownloadURL: downloadURL,
 	})
 }
 
@@ -221,6 +247,8 @@ func writeStoreError(w http.ResponseWriter, fallbackMessage string, err error) {
 		writeError(w, http.StatusBadRequest, "Invalid filename", err)
 	case errors.Is(err, ErrFileNotFound):
 		writeError(w, http.StatusNotFound, "File not found", err)
+	case errors.Is(err, ErrFileAlreadyExists):
+		writeError(w, http.StatusConflict, "File already exists", err)
 	default:
 		writeError(w, http.StatusInternalServerError, fallbackMessage, err)
 	}
