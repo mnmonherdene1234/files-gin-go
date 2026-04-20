@@ -11,6 +11,30 @@ go run .
 
 FilePocket listens on the port from `.env` or the default `9935`.
 
+## Run With Docker
+
+Build and run the service with Docker Compose:
+
+```bash
+docker compose up --build
+```
+
+The container listens on the port from `SERVER_PORT`, defaulting to `9935`.
+Files are persisted in the `gofilepocket-files` volume at `/app/files`.
+
+To change runtime settings, create a `.env` file in the project root before
+starting Compose. The same `SERVER_PORT` value is used for both the host port
+and the container port, so mapping stays consistent.
+If you change `FILES_DIR`, update the volume mount in `docker-compose.yml` to
+match.
+
+If you prefer plain Docker, build and run the image directly:
+
+```bash
+docker build -t gofilepocket .
+docker run --rm -p 9935:9935 -v gofilepocket-files:/app/files gofilepocket
+```
+
 ## Environment Variables
 
 | Variable                  | Default     | Description                                |

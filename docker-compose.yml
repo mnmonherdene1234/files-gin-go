@@ -1,0 +1,24 @@
+services:
+  gofilepocket:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: gofilepocket:latest
+    ports:
+      - "${SERVER_PORT:-9935}:${SERVER_PORT:-9935}"
+    environment:
+      SERVER_PORT: ${SERVER_PORT:-9935}
+      FILES_DIR: /app/files
+      STATIC_FILES_SERVE_PATH: ${STATIC_FILES_SERVE_PATH:-/files}
+      IS_SERVE_STATIC_FILES: ${IS_SERVE_STATIC_FILES:-true}
+      API_KEY_ENABLED: ${API_KEY_ENABLED:-false}
+      API_KEY_HEADER: ${API_KEY_HEADER:-X-API-Key}
+      API_KEY: ${API_KEY:-}
+      MAX_UPLOAD_MEMORY_MB: ${MAX_UPLOAD_MEMORY_MB:-32}
+      MAX_UPLOAD_SIZE_MB: ${MAX_UPLOAD_SIZE_MB:-100}
+    volumes:
+      - gofilepocket-files:/app/files
+    restart: unless-stopped
+
+volumes:
+  gofilepocket-files:

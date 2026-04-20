@@ -1,0 +1,8 @@
+.git
+.env
+files/
+build/
+*.test
+*.out
+.gocache
+docker-compose.override.yml
