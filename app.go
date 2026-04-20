@@ -6,6 +6,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 )
@@ -125,7 +126,7 @@ func (a *App) handleUpload(w http.ResponseWriter, r *http.Request) {
 
 	var downloadURL string
 	if a.config.ServeStaticFiles {
-		downloadURL = a.config.StaticFilesPath + "/" + filename
+		downloadURL = a.config.StaticFilesPath + "/" + url.PathEscape(filename)
 	}
 
 	writeJSON(w, http.StatusOK, UploadResponse{

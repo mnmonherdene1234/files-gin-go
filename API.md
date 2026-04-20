@@ -67,6 +67,7 @@ Response:
 Notes:
 
 - `downloadUrl` is only returned when static file serving is enabled.
+- `downloadUrl` is URL-encoded when the filename contains reserved characters or spaces.
 - If `useOriginalFilename=true` and the file already exists, the API returns `409 Conflict`.
 - Uploads larger than `MAX_UPLOAD_SIZE_MB` return `413 Payload Too Large`.
 
@@ -119,11 +120,14 @@ The actual prefix is configured by `STATIC_FILES_SERVE_PATH`.
 
 ## Errors
 
-All errors return JSON:
+API endpoints return JSON errors:
 
 ```json
 { "error": "message" }
 ```
+
+Static file requests are served by `http.FileServer`, so missing files may
+return the Go server's default 404 response instead of JSON.
 
 Common status codes:
 
@@ -141,7 +145,7 @@ Responses include:
 ```text
 Access-Control-Allow-Origin: *
 Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS
-Access-Control-Allow-Headers: Content-Type, Accept, X-API-Key
+Access-Control-Allow-Headers: Content-Type, Accept, <configured API key header>
 ```
 
 Preflight `OPTIONS` requests return `204 No Content`.

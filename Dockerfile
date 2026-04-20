@@ -28,6 +28,6 @@ EXPOSE 9935
 
 USER app
 
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 CMD wget -qO- http://127.0.0.1:9935/health >/dev/null 2>&1 || exit 1
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 CMD wget -qO- http://127.0.0.1:${SERVER_PORT}/health >/dev/null 2>&1 || exit 1
 
 CMD ["/usr/local/bin/gofilepocket"]
