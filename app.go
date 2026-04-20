@@ -20,9 +20,9 @@ type DeleteFileRequest struct {
 }
 
 type UploadResponse struct {
-	Message      string `json:"message"`
-	Filename     string `json:"filename"`
-	DownloadURL  string `json:"downloadUrl,omitempty"`
+	Message     string `json:"message"`
+	Filename    string `json:"filename"`
+	DownloadURL string `json:"downloadUrl,omitempty"`
 }
 
 type DeleteResponse struct {
@@ -71,7 +71,7 @@ func (a *App) Handler() http.Handler {
 
 func (a *App) handleIndex(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{
-		"name": "files-gin-go",
+		"name": "FilePocket",
 		"endpoints": []string{
 			"GET /health",
 			"POST /upload",

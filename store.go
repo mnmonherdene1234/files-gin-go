@@ -12,8 +12,8 @@ import (
 )
 
 var (
-	ErrInvalidFilename  = errors.New("invalid filename")
-	ErrFileNotFound     = errors.New("file not found")
+	ErrInvalidFilename   = errors.New("invalid filename")
+	ErrFileNotFound      = errors.New("file not found")
 	ErrFileAlreadyExists = errors.New("file already exists")
 )
 
