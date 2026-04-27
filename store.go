@@ -64,8 +64,11 @@ func (s *FileStore) Save(reader io.Reader, name string) error {
 	}
 	defer file.Close()
 
-	_, err = io.Copy(file, reader)
-	return err
+	if _, err = io.Copy(file, reader); err != nil {
+		os.Remove(filePath)
+		return err
+	}
+	return nil
 }
 
 func (s *FileStore) Delete(name string) error {
