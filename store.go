@@ -71,6 +71,21 @@ func (s *FileStore) Save(reader io.Reader, name string) error {
 	return nil
 }
 
+func (s *FileStore) Open(name string) (*os.File, error) {
+	filePath, err := s.resolveFilePath(name)
+	if err != nil {
+		return nil, err
+	}
+	f, err := os.Open(filePath)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return nil, ErrFileNotFound
+		}
+		return nil, err
+	}
+	return f, nil
+}
+
 func (s *FileStore) Delete(name string) error {
 	filePath, err := s.resolveFilePath(name)
 	if err != nil {

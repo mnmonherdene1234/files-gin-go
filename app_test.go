@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
+	"log"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
@@ -13,9 +14,14 @@ import (
 	"testing"
 )
 
+// newTestApp creates an App with a discarding logger to keep test output clean.
+func newTestApp(cfg Config) *App {
+	return NewAppWithLogger(cfg, log.New(io.Discard, "", 0))
+}
+
 func TestHandleUploadEscapesDownloadURL(t *testing.T) {
 	dir := t.TempDir()
-	app := NewApp(Config{
+	app := newTestApp(Config{
 		FilesDir:          dir,
 		StaticFilesPath:   "/files",
 		ServeStaticFiles:  true,
@@ -54,7 +60,7 @@ func TestHandleUploadEscapesDownloadURL(t *testing.T) {
 }
 
 func TestCORSIncludesConfiguredAPIKeyHeader(t *testing.T) {
-	app := NewApp(Config{
+	app := newTestApp(Config{
 		APIKeyEnabled:    true,
 		APIKeyHeader:     "X-Custom-Key",
 		APIKey:           "secret",
@@ -79,7 +85,7 @@ func TestCORSIncludesConfiguredAPIKeyHeader(t *testing.T) {
 }
 
 func TestHandleIndex(t *testing.T) {
-	app := NewApp(Config{FilesDir: t.TempDir(), StaticFilesPath: "/files"})
+	app := newTestApp(Config{FilesDir: t.TempDir(), StaticFilesPath: "/files"})
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	rr := httptest.NewRecorder()
 	app.Handler().ServeHTTP(rr, req)
@@ -97,7 +103,7 @@ func TestHandleIndex(t *testing.T) {
 }
 
 func TestHandleHealth(t *testing.T) {
-	app := NewApp(Config{FilesDir: t.TempDir(), StaticFilesPath: "/files"})
+	app := newTestApp(Config{FilesDir: t.TempDir(), StaticFilesPath: "/files"})
 	req := httptest.NewRequest(http.MethodGet, "/health", nil)
 	rr := httptest.NewRecorder()
 	app.Handler().ServeHTTP(rr, req)
@@ -115,7 +121,7 @@ func TestHandleHealth(t *testing.T) {
 }
 
 func TestHandleUploadNoFile(t *testing.T) {
-	app := NewApp(Config{
+	app := newTestApp(Config{
 		FilesDir:          t.TempDir(),
 		MaxUploadMemoryMB: 32,
 		MaxUploadSizeMB:   100,
@@ -137,7 +143,7 @@ func TestHandleUploadNoFile(t *testing.T) {
 
 func TestHandleUploadUniqueFilename(t *testing.T) {
 	dir := t.TempDir()
-	app := NewApp(Config{
+	app := newTestApp(Config{
 		FilesDir:          dir,
 		MaxUploadMemoryMB: 32,
 		MaxUploadSizeMB:   100,
@@ -168,7 +174,7 @@ func TestHandleUploadUniqueFilename(t *testing.T) {
 }
 
 func TestHandleUploadSizeLimit(t *testing.T) {
-	app := NewApp(Config{
+	app := newTestApp(Config{
 		FilesDir:          t.TempDir(),
 		MaxUploadMemoryMB: 1,
 		MaxUploadSizeMB:   1,
@@ -201,7 +207,7 @@ func TestHandleUploadSizeLimit(t *testing.T) {
 
 func TestHandleDeleteAndList(t *testing.T) {
 	dir := t.TempDir()
-	app := NewApp(Config{
+	app := newTestApp(Config{
 		FilesDir:          dir,
 		MaxUploadMemoryMB: 32,
 		MaxUploadSizeMB:   100,
@@ -261,7 +267,7 @@ func TestHandleDeleteAndList(t *testing.T) {
 }
 
 func TestHandleDeleteMissingFilename(t *testing.T) {
-	app := NewApp(Config{FilesDir: t.TempDir()})
+	app := newTestApp(Config{FilesDir: t.TempDir()})
 	rr := httptest.NewRecorder()
 	app.Handler().ServeHTTP(rr, httptest.NewRequest(http.MethodDelete, "/delete", strings.NewReader(`{"filename":""}`)))
 	if rr.Code != http.StatusBadRequest {
@@ -270,7 +276,7 @@ func TestHandleDeleteMissingFilename(t *testing.T) {
 }
 
 func TestHandleDeleteInvalidJSON(t *testing.T) {
-	app := NewApp(Config{FilesDir: t.TempDir()})
+	app := newTestApp(Config{FilesDir: t.TempDir()})
 	rr := httptest.NewRecorder()
 	app.Handler().ServeHTTP(rr, httptest.NewRequest(http.MethodDelete, "/delete", strings.NewReader(`not json`)))
 	if rr.Code != http.StatusBadRequest {
@@ -280,7 +286,7 @@ func TestHandleDeleteInvalidJSON(t *testing.T) {
 
 func TestHandleSize(t *testing.T) {
 	dir := t.TempDir()
-	app := NewApp(Config{
+	app := newTestApp(Config{
 		FilesDir:          dir,
 		MaxUploadMemoryMB: 32,
 		MaxUploadSizeMB:   100,
@@ -312,7 +318,7 @@ func TestHandleSize(t *testing.T) {
 }
 
 func TestProtectedEndpointRequiresAPIKey(t *testing.T) {
-	app := NewApp(Config{
+	app := newTestApp(Config{
 		APIKeyEnabled:     true,
 		APIKeyHeader:      "X-API-Key",
 		APIKey:            "secret",
@@ -349,7 +355,7 @@ func TestProtectedEndpointRequiresAPIKey(t *testing.T) {
 
 func TestHandleUploadConflictWithOriginalFilename(t *testing.T) {
 	dir := t.TempDir()
-	app := NewApp(Config{
+	app := newTestApp(Config{
 		FilesDir:          dir,
 		MaxUploadMemoryMB: 32,
 		MaxUploadSizeMB:   100,
@@ -369,7 +375,7 @@ func TestHandleUploadConflictWithOriginalFilename(t *testing.T) {
 }
 
 func TestHandleUploadNoDownloadURLWhenStaticDisabled(t *testing.T) {
-	app := NewApp(Config{
+	app := newTestApp(Config{
 		FilesDir:          t.TempDir(),
 		ServeStaticFiles:  false,
 		MaxUploadMemoryMB: 32,
@@ -410,6 +416,78 @@ func TestSavePartialCleanupOnCopyError(t *testing.T) {
 	// The partial file must not remain on disk
 	if _, statErr := os.Stat(filepath.Join(dir, "partial.txt")); !os.IsNotExist(statErr) {
 		t.Fatal("expected partial file to be cleaned up after copy error")
+	}
+}
+
+func TestHandleDownload(t *testing.T) {
+	dir := t.TempDir()
+	app := newTestApp(Config{
+		FilesDir:          dir,
+		MaxUploadMemoryMB: 32,
+		MaxUploadSizeMB:   100,
+	})
+
+	content := "hello download"
+
+	// Upload the file first
+	req, err := newMultipartUploadRequest("fetch me.txt", content, true)
+	if err != nil {
+		t.Fatalf("build upload request: %v", err)
+	}
+	rr := httptest.NewRecorder()
+	app.Handler().ServeHTTP(rr, req)
+	if rr.Code != http.StatusOK {
+		t.Fatalf("upload failed: %d %s", rr.Code, rr.Body.String())
+	}
+
+	// Download via the new endpoint (filename URL-encoded in path)
+	rr = httptest.NewRecorder()
+	app.Handler().ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/download/fetch%20me.txt", nil))
+	if rr.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d: %s", rr.Code, rr.Body.String())
+	}
+	if got := rr.Body.String(); got != content {
+		t.Fatalf("expected body %q, got %q", content, got)
+	}
+	cd := rr.Header().Get("Content-Disposition")
+	if !strings.Contains(cd, "inline") {
+		t.Fatalf("expected inline content-disposition, got %q", cd)
+	}
+}
+
+func TestHandleDownloadNotFound(t *testing.T) {
+	app := newTestApp(Config{FilesDir: t.TempDir()})
+	rr := httptest.NewRecorder()
+	app.Handler().ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/download/nosuchfile.txt", nil))
+	if rr.Code != http.StatusNotFound {
+		t.Fatalf("expected 404, got %d", rr.Code)
+	}
+}
+
+func TestHandleDownloadPathTraversalRejected(t *testing.T) {
+	app := newTestApp(Config{FilesDir: t.TempDir()})
+	rr := httptest.NewRecorder()
+	// Go's ServeMux cleans paths, but the store also validates independently
+	app.Handler().ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/download/..%2Foutside.txt", nil))
+	if rr.Code == http.StatusOK {
+		t.Fatal("expected non-200 for path traversal attempt")
+	}
+}
+
+func TestHandleDownloadRequiresAPIKey(t *testing.T) {
+	app := newTestApp(Config{
+		APIKeyEnabled:     true,
+		APIKeyHeader:      "X-API-Key",
+		APIKey:            "secret",
+		FilesDir:          t.TempDir(),
+		MaxUploadMemoryMB: 32,
+		MaxUploadSizeMB:   100,
+	})
+
+	rr := httptest.NewRecorder()
+	app.Handler().ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/download/anything.txt", nil))
+	if rr.Code != http.StatusUnauthorized {
+		t.Fatalf("expected 401, got %d", rr.Code)
 	}
 }
 
