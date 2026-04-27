@@ -13,7 +13,6 @@ func unsetEnv(t *testing.T, keys ...string) {
 	for _, key := range keys {
 		old, had := os.LookupEnv(key)
 		os.Unsetenv(key)
-		key, old, had := key, old, had // capture loop vars
 		t.Cleanup(func() {
 			if had {
 				os.Setenv(key, old)
