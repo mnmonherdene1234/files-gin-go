@@ -4,6 +4,7 @@ import (
 	"crypto/subtle"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"net/url"
@@ -49,6 +50,9 @@ func NewApp(cfg Config) *App {
 }
 
 func NewAppWithLogger(cfg Config, logger *log.Logger) *App {
+	if logger == nil {
+		logger = log.Default()
+	}
 	return &App{
 		config: cfg,
 		store:  NewFileStore(cfg.FilesDir),
@@ -203,7 +207,7 @@ func (a *App) handleDownload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Disposition", "inline; filename*=UTF-8''"+url.PathEscape(filename))
+	w.Header().Set("Content-Disposition", "inline; filename=\""+quotedStringEscape(filename)+"\"; filename*=UTF-8''"+rfc5987Encode(filename))
 	http.ServeContent(w, r, filename, info.ModTime(), f)
 }
 
@@ -295,4 +299,44 @@ func (a *App) writeJSON(w http.ResponseWriter, status int, value any) {
 	if err := json.NewEncoder(w).Encode(value); err != nil {
 		a.logger.Printf("failed to encode response: %v", err)
 	}
+}
+
+// quotedStringEscape produces a safe ASCII value for the quoted-string syntax
+// used in Content-Disposition filename= parameters (RFC 6266 / RFC 2616).
+// Non-ASCII bytes and control characters are stripped; `"` and `\` are
+// backslash-escaped.
+func quotedStringEscape(s string) string {
+	var b strings.Builder
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+		if c < 0x20 || c > 0x7E {
+			// skip non-printable / non-ASCII bytes
+			continue
+		}
+		if c == '"' || c == '\\' {
+			b.WriteByte('\\')
+		}
+		b.WriteByte(c)
+	}
+	return b.String()
+}
+
+// rfc5987Encode percent-encodes a string per the attr-char set defined in
+// RFC 5987 §3.2.1 for use in Content-Disposition filename* parameters.
+// We iterate over the raw UTF-8 bytes because RFC 5987 encodes the byte
+// representation of the charset (UTF-8 here), not Unicode code points.
+func rfc5987Encode(s string) string {
+	var b strings.Builder
+	for _, c := range []byte(s) {
+		// attr-char = ALPHA / DIGIT / "!" / "#" / "$" / "&" / "+" / "-" / "." /
+		//             "^" / "_" / "`" / "|" / "~"  (RFC 5987 §3.2.1)
+		if (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') ||
+			c == '!' || c == '#' || c == '$' || c == '&' || c == '+' || c == '-' ||
+			c == '.' || c == '^' || c == '_' || c == '`' || c == '|' || c == '~' {
+			b.WriteByte(c)
+		} else {
+			fmt.Fprintf(&b, "%%%02X", c)
+		}
+	}
+	return b.String()
 }

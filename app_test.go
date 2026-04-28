@@ -453,6 +453,12 @@ func TestHandleDownload(t *testing.T) {
 	if !strings.Contains(cd, "inline") {
 		t.Fatalf("expected inline content-disposition, got %q", cd)
 	}
+	if !strings.Contains(cd, `filename="fetch me.txt"`) {
+		t.Fatalf("expected ascii filename in content-disposition, got %q", cd)
+	}
+	if !strings.Contains(cd, "filename*=UTF-8''fetch%20me.txt") {
+		t.Fatalf("expected RFC 5987 filename* in content-disposition, got %q", cd)
+	}
 }
 
 func TestHandleDownloadNotFound(t *testing.T) {

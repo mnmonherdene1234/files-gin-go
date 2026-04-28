@@ -62,13 +62,13 @@ func (s *FileStore) Save(reader io.Reader, name string) error {
 		}
 		return err
 	}
-	defer file.Close()
 
 	if _, err = io.Copy(file, reader); err != nil {
+		file.Close()
 		os.Remove(filePath)
 		return err
 	}
-	return nil
+	return file.Close()
 }
 
 func (s *FileStore) Open(name string) (*os.File, error) {
