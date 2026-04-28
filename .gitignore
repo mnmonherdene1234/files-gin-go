@@ -1,8 +1,7 @@
 .env
 files/
 build/
-files-gin-go
-files-gin-go.exe
+dist/
 gofilepocket
 gofilepocket.exe
 *.test
