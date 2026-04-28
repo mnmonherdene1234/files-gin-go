@@ -3,6 +3,8 @@ files/
 build/
 files-gin-go
 files-gin-go.exe
+gofilepocket
+gofilepocket.exe
 *.test
 *.out
 .gocache

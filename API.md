@@ -8,6 +8,7 @@ When `API_KEY_ENABLED=true`, include the configured API key header on these endp
 - `DELETE /delete`
 - `GET /list`
 - `GET /size`
+- `GET /download/{filename}`
 - static file access
 
 Public endpoints:
@@ -111,6 +112,18 @@ Response:
 ```json
 { "size": 1234 }
 ```
+
+## GET /download/{filename}
+
+Stream a stored file directly. Supports `Range`, `If-Modified-Since`, and `ETag` headers.
+
+The response includes:
+
+```
+Content-Disposition: inline; filename*=UTF-8''<percent-encoded filename>
+```
+
+Errors (file not found, invalid filename) are returned as JSON, unlike the static file server.
 
 ## GET /files/{path}
 
