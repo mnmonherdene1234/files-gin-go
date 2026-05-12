@@ -205,6 +205,26 @@ func TestHandleUploadSizeLimit(t *testing.T) {
 	}
 }
 
+func TestHandleUploadAllowsUnlimitedWhenSizeLimitIsZero(t *testing.T) {
+	app := newTestApp(Config{
+		FilesDir:          t.TempDir(),
+		MaxUploadMemoryMB: 1,
+		MaxUploadSizeMB:   0,
+	})
+
+	req, err := newMultipartUploadRequest("big.bin", strings.Repeat("x", 2*1024*1024), true)
+	if err != nil {
+		t.Fatalf("build request: %v", err)
+	}
+
+	rr := httptest.NewRecorder()
+	app.Handler().ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d: %s", rr.Code, rr.Body.String())
+	}
+}
+
 func TestHandleDeleteAndList(t *testing.T) {
 	dir := t.TempDir()
 	app := newTestApp(Config{

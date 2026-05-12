@@ -65,3 +65,23 @@ func TestLoadConfig_APIKeyDisabled(t *testing.T) {
 		t.Fatal("expected APIKeyEnabled to be false")
 	}
 }
+
+func TestLoadConfig_DefaultUploadSizeIsUnlimited(t *testing.T) {
+	dir := t.TempDir()
+
+	unsetEnv(t, "API_KEY_ENABLED", "API_KEY", "MAX_UPLOAD_SIZE_MB")
+
+	originalCwd, _ := os.Getwd()
+	if err := os.Chdir(dir); err != nil {
+		t.Fatalf("chdir: %v", err)
+	}
+	defer os.Chdir(originalCwd)
+
+	cfg, err := LoadConfig()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if cfg.MaxUploadSizeMB != 0 {
+		t.Fatalf("expected MaxUploadSizeMB to default to 0, got %d", cfg.MaxUploadSizeMB)
+	}
+}

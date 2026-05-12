@@ -36,7 +36,7 @@ func LoadConfig() (Config, error) {
 		StaticFilesPath:   normalizeURLPath(getEnv("STATIC_FILES_SERVE_PATH", "/files")),
 		ServeStaticFiles:  parseBool(getEnv("IS_SERVE_STATIC_FILES", "true")),
 		MaxUploadMemoryMB: parseInt64(getEnv("MAX_UPLOAD_MEMORY_MB", "32"), 32),
-		MaxUploadSizeMB:   parseInt64(getEnv("MAX_UPLOAD_SIZE_MB", "100"), 100),
+		MaxUploadSizeMB:   parseNonNegativeInt64(getEnv("MAX_UPLOAD_SIZE_MB", "0"), 0),
 	}
 
 	if cfg.APIKeyEnabled && cfg.APIKey == "" {
@@ -124,6 +124,14 @@ func parseBool(value string) bool {
 func parseInt64(value string, defaultValue int64) int64 {
 	parsed, err := strconv.ParseInt(strings.TrimSpace(value), 10, 64)
 	if err != nil || parsed <= 0 {
+		return defaultValue
+	}
+	return parsed
+}
+
+func parseNonNegativeInt64(value string, defaultValue int64) int64 {
+	parsed, err := strconv.ParseInt(strings.TrimSpace(value), 10, 64)
+	if err != nil || parsed < 0 {
 		return defaultValue
 	}
 	return parsed

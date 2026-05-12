@@ -15,7 +15,7 @@ services:
       API_KEY_HEADER: ${API_KEY_HEADER:-X-API-Key}
       API_KEY: ${API_KEY:-}
       MAX_UPLOAD_MEMORY_MB: ${MAX_UPLOAD_MEMORY_MB:-32}
-      MAX_UPLOAD_SIZE_MB: ${MAX_UPLOAD_SIZE_MB:-100}
+      MAX_UPLOAD_SIZE_MB: ${MAX_UPLOAD_SIZE_MB:-0}
     volumes:
       - gofilepocket-files:/app/files
     restart: unless-stopped

@@ -70,7 +70,7 @@ Notes:
 - `downloadUrl` is only returned when static file serving is enabled.
 - `downloadUrl` is URL-encoded when the filename contains reserved characters or spaces.
 - If `useOriginalFilename=true` and the file already exists, the API returns `409 Conflict`.
-- Uploads larger than `MAX_UPLOAD_SIZE_MB` return `413 Payload Too Large`.
+- Uploads are unlimited by default. When `MAX_UPLOAD_SIZE_MB` is set to a positive number, larger uploads return `413 Payload Too Large`.
 
 ## DELETE /delete
 

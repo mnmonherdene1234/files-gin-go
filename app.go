@@ -101,8 +101,10 @@ func (a *App) handleHealth(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) handleUpload(w http.ResponseWriter, r *http.Request) {
-	maxSize := a.config.MaxUploadSizeMB << 20
-	r.Body = http.MaxBytesReader(w, r.Body, maxSize)
+	if a.config.MaxUploadSizeMB > 0 {
+		maxSize := a.config.MaxUploadSizeMB << 20
+		r.Body = http.MaxBytesReader(w, r.Body, maxSize)
+	}
 	if err := r.ParseMultipartForm(a.config.MaxUploadMemoryMB << 20); err != nil {
 		if r.MultipartForm != nil {
 			r.MultipartForm.RemoveAll()
