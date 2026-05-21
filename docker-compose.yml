@@ -17,8 +17,5 @@ services:
       MAX_UPLOAD_MEMORY_MB: ${MAX_UPLOAD_MEMORY_MB:-32}
       MAX_UPLOAD_SIZE_MB: ${MAX_UPLOAD_SIZE_MB:-0}
     volumes:
-      - gofilepocket-files:/app/files
+      - ./files:/app/files
     restart: unless-stopped
-
-volumes:
-  gofilepocket-files:

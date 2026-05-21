@@ -35,16 +35,14 @@ services:
       API_KEY: ""
       MAX_UPLOAD_MEMORY_MB: "32"
     volumes:
-      - gofilepocket-files:/app/files
+      - ./files:/app/files
     restart: unless-stopped
-
-volumes:
-  gofilepocket-files:
 ```
 
 Start the service:
 
 ```bash
+mkdir -p files
 docker compose up -d
 ```
 
@@ -54,9 +52,9 @@ The API will be available at:
 http://localhost:9935
 ```
 
-Uploaded files are stored in the Docker volume named `gofilepocket-files`.
-This keeps files available after the container is stopped, restarted, or
-recreated.
+Uploaded files are stored in the `./files` directory next to your
+`docker-compose.yml` file. This keeps files available after the container is
+stopped, restarted, or recreated.
 
 To stop the service:
 
@@ -100,33 +98,35 @@ docker compose up --build
 ```
 
 The container listens on the port from `SERVER_PORT`, defaulting to `9935`.
-Files are persisted in the `gofilepocket-files` volume at `/app/files`.
+Files are persisted in the local `./files` directory mounted at `/app/files`.
 
 To change runtime settings, create a `.env` file in the project root before
 starting Compose. The same `SERVER_PORT` value is used for both the host port
 and the container port, so mapping stays consistent.
-Compose uses `/app/files` inside the container for file storage. If you need a
-different storage path, edit `docker-compose.yml` and the volume mount together.
+Compose uses `/app/files` inside the container for file storage and `./files`
+on the host. If you need a different storage path, edit `docker-compose.yml`
+and the volume mount together.
 
 If you prefer plain Docker, build and run the image directly:
 
 ```bash
+mkdir -p files
 docker build -t gofilepocket .
-docker run --rm -p 9935:9935 -v gofilepocket-files:/app/files gofilepocket
+docker run --rm -p 9935:9935 -v "$(pwd)/files:/app/files" gofilepocket
 ```
 
 ## Environment Variables
 
-| Variable                  | Default     | Description                                |
-| ------------------------- | ----------- | ------------------------------------------ |
-| `SERVER_PORT`             | `9935`      | HTTP server port                           |
-| `FILES_DIR`               | `./files`   | Local directory used to store files        |
-| `STATIC_FILES_SERVE_PATH` | `/files`    | Public path for static file serving        |
-| `IS_SERVE_STATIC_FILES`   | `true`      | Enable or disable static file serving      |
-| `API_KEY_ENABLED`         | `false`     | Require an API key for protected endpoints |
-| `API_KEY_HEADER`          | `X-API-Key` | Request header name for the API key        |
-| `API_KEY`                 | empty       | API key value used when auth is enabled    |
-| `MAX_UPLOAD_MEMORY_MB`    | `32`        | Memory threshold for multipart parsing     |
+| Variable                  | Default     | Description                                           |
+| ------------------------- | ----------- | ----------------------------------------------------- |
+| `SERVER_PORT`             | `9935`      | HTTP server port                                      |
+| `FILES_DIR`               | `./files`   | Local directory used to store files                   |
+| `STATIC_FILES_SERVE_PATH` | `/files`    | Public path for static file serving                   |
+| `IS_SERVE_STATIC_FILES`   | `true`      | Enable or disable static file serving                 |
+| `API_KEY_ENABLED`         | `false`     | Require an API key for protected endpoints            |
+| `API_KEY_HEADER`          | `X-API-Key` | Request header name for the API key                   |
+| `API_KEY`                 | empty       | API key value used when auth is enabled               |
+| `MAX_UPLOAD_MEMORY_MB`    | `32`        | Memory threshold for multipart parsing                |
 | `MAX_UPLOAD_SIZE_MB`      | `0`         | Optional upload size limit in MB. `0` means unlimited |
 
 When `API_KEY_ENABLED=true`, `API_KEY` must be set.
